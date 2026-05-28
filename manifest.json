@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "iClicker AutoClicker",
   "version": "1.0",
-  "description": "Record exact click positions on any webpage and replay them in sequence. Perfect for iClicker quizzes, surveys, and repetitive tasks.",
+  "description": "Record exact click positions on any webpage and replay them in sequence. Perfect for iClicker quizzes, surveys, and repetitive tasks",
   "permissions": ["activeTab", "scripting", "storage"],
   "action": {
     "default_popup": "popup.html",
