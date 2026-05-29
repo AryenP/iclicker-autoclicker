@@ -1,15 +1,45 @@
-// Guard against double-injection (manifest + scripting.executeScript)
+const _SK = 'acState_' + window.location.hostname;
+const _MC = '__ac_marker';
+
+// Runs on EVERY injection — restores markers without needing the popup open
+chrome.storage.local.get(_SK, (data) => {
+  const saved = data[_SK];
+  if (!saved?.steps?.length) return;
+  if (window.__acState) {
+    window.__acState.steps = saved.steps;
+    window.__acState.currentStep = saved.currentStep ?? -1;
+  }
+  document.querySelectorAll('.' + _MC).forEach(el => el.remove());
+  saved.steps.forEach((step, i) => {
+    const m = document.createElement('div');
+    m.className = _MC;
+    Object.assign(m.style, {
+      position: 'fixed',
+      left: `${step.x - 14}px`, top: `${step.y - 14}px`,
+      width: '28px', height: '28px', borderRadius: '50%',
+      background: i === (saved.currentStep ?? -1) ? '#f59e0b' : '#a78bfa',
+      border: '2px solid #fff', color: '#fff', fontSize: '11px', fontWeight: '700',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: '2147483645', pointerEvents: 'none',
+      fontFamily: 'system-ui,sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,.5)',
+      transition: 'background .15s',
+    });
+    m.textContent = i + 1;
+    document.body.appendChild(m);
+  });
+});
+
+// Guard — event listeners and state only set up once per page load
 if (!window.__acLoaded) {
 window.__acLoaded = true;
 
-const AC = { mode: 'idle', steps: [], currentStep: -1 };
+const AC = window.__acState = { mode: 'idle', steps: [], currentStep: -1 };
 let playAbort = false;
 let stopBtn = null;
 let overlay = null;
-const MC = '__ac_marker';
 
-// Per-site storage key — steps are saved per hostname
-const SITE_KEY = 'acState_' + window.location.hostname;
+const SITE_KEY = _SK;
+const MC = _MC;
 
 // ── Markers ─────────────────────────────────────────────────
 
@@ -21,17 +51,13 @@ function renderMarkers() {
     const active = i === AC.currentStep;
     Object.assign(m.style, {
       position: 'fixed',
-      left: `${step.x - 14}px`,
-      top: `${step.y - 14}px`,
-      width: '28px', height: '28px',
-      borderRadius: '50%',
+      left: `${step.x - 14}px`, top: `${step.y - 14}px`,
+      width: '28px', height: '28px', borderRadius: '50%',
       background: active ? '#f59e0b' : '#a78bfa',
-      border: '2px solid #fff',
-      color: '#fff', fontSize: '11px', fontWeight: '700',
+      border: '2px solid #fff', color: '#fff', fontSize: '11px', fontWeight: '700',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       zIndex: '2147483645', pointerEvents: 'none',
-      fontFamily: 'system-ui,sans-serif',
-      boxShadow: '0 2px 8px rgba(0,0,0,.5)',
+      fontFamily: 'system-ui,sans-serif', boxShadow: '0 2px 8px rgba(0,0,0,.5)',
       transition: 'background .15s',
     });
     m.textContent = i + 1;
@@ -64,10 +90,8 @@ function startRecording() {
   overlay.id = '__ac_ol';
   Object.assign(overlay.style, {
     position: 'fixed', inset: '0',
-    zIndex: '2147483644',
-    pointerEvents: 'none',
-    outline: '3px solid #a78bfa',
-    outlineOffset: '-3px',
+    zIndex: '2147483644', pointerEvents: 'none',
+    outline: '3px solid #a78bfa', outlineOffset: '-3px',
     background: 'rgba(167,139,250,.06)',
   });
   document.body.appendChild(overlay);
@@ -76,21 +100,18 @@ function startRecording() {
   stopBtn.textContent = '⏹  Stop Recording';
   Object.assign(stopBtn.style, {
     position: 'fixed', top: '14px', right: '14px',
-    zIndex: '2147483647',
-    background: '#ef4444', color: '#fff',
-    border: 'none', borderRadius: '8px',
-    padding: '8px 14px', fontSize: '13px', fontWeight: '600',
-    cursor: 'pointer', fontFamily: 'system-ui,sans-serif',
-    boxShadow: '0 4px 12px rgba(0,0,0,.35)',
+    zIndex: '2147483647', background: '#ef4444', color: '#fff',
+    border: 'none', borderRadius: '8px', padding: '8px 14px',
+    fontSize: '13px', fontWeight: '600', cursor: 'pointer',
+    fontFamily: 'system-ui,sans-serif', boxShadow: '0 4px 12px rgba(0,0,0,.35)',
   });
   stopBtn.addEventListener('click', e => {
-    e.stopImmediatePropagation();
-    e.preventDefault();
-    stopRecording();
+    e.stopImmediatePropagation(); e.preventDefault(); stopRecording();
   }, { capture: true });
   document.body.appendChild(stopBtn);
 
   document.addEventListener('click', onPageClick, { capture: true });
+  renderMarkers();
   persist();
 }
 
@@ -166,14 +187,6 @@ chrome.runtime.onMessage.addListener(msg => {
     }
     case 'CLEAR':
       AC.steps = []; renderMarkers(); persist(); break;
-  }
-});
-
-chrome.storage.local.get(SITE_KEY, (data) => {
-  const saved = data[SITE_KEY];
-  if (saved?.steps?.length) {
-    AC.steps = saved.steps;
-    renderMarkers();
   }
 });
 

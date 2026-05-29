@@ -3,7 +3,8 @@
   "name": "AutoClicker: Record & Replay",
   "version": "1.0",
   "description": "Record click sequences on any webpage and replay them automatically. Set delays, loop, and reorder steps — no coding needed",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "tabs"],
+  "background": { "service_worker": "background.js" },
   "host_permissions": ["<all_urls>"],
   "content_scripts": [{
     "matches": ["<all_urls>"],
