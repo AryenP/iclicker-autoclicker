@@ -71,7 +71,7 @@ This extension stores data **locally only** — no data is ever sent to any serv
 ## Credits
 
 Built by **Aryen Palkar** · UC San Diego  
-[GitHub](https://github.com/AryenP) · [Repository](https://github.com/AryenP/iclicker-autoclicker)
+[GitHub](https://github.com/AryenP) · [Repository](https://github.com/AryenP/autoclicker-record-replay)
 
 ---
 

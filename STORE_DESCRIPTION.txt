@@ -54,4 +54,4 @@ CREDITS
 ─────────────────────────────────────
 
 Built by Aryen Palkar, UC San Diego.
-Source code: https://github.com/AryenP/iclicker-autoclicker
+Source code: https://github.com/AryenP/autoclicker-record-replay
