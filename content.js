@@ -217,7 +217,9 @@ chrome.runtime.onMessage.addListener(msg => {
   switch (msg.type) {
     case 'START_REC':   startRecording(); break;
     case 'STOP_REC':    stopRecording(); break;
-    case 'PLAY':        play(msg.steps, msg.delay, msg.loop); break;
+    case 'PLAY':
+      if (AC.mode === 'recording') stopRecording(); // auto-stop recording before playing
+      play(msg.steps, msg.delay, msg.loop); break;
     case 'STOP_PLAY':   playAbort = true; break;
     case 'DELETE_STEP':
       AC.steps = AC.steps.filter(s => s.id !== msg.id);
